@@ -1,57 +1,33 @@
-// jest.config.js - Root Jest configuration file
+const nextJest = require("next/jest")
 
-module.exports = {
-  // Base configuration for all tests
-  projects: [
-    // Server-side tests configuration
-    {
-      displayName: 'server',
-      testEnvironment: 'node',
-      testMatch: ['<rootDir>/server/tests/**/*.test.js'],
-      moduleFileExtensions: ['js', 'json', 'node'],
-      setupFilesAfterEnv: ['<rootDir>/server/tests/setup.js'],
-      coverageDirectory: '<rootDir>/coverage/server',
-      collectCoverageFrom: [
-        'server/src/**/*.js',
-        '!server/src/config/**',
-        '!**/node_modules/**',
-      ],
-    },
-    
-    // Client-side tests configuration
-    {
-      displayName: 'client',
-      testEnvironment: 'jsdom',
-      testMatch: ['<rootDir>/client/src/**/*.test.{js,jsx}'],
-      moduleFileExtensions: ['js', 'jsx', 'json'],
-      moduleNameMapper: {
-        '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-        '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/client/src/tests/__mocks__/fileMock.js',
-      },
-      setupFilesAfterEnv: ['<rootDir>/client/src/tests/setup.js'],
-      transform: {
-        '^.+\\.(js|jsx)$': 'babel-jest',
-      },
-      coverageDirectory: '<rootDir>/coverage/client',
-      collectCoverageFrom: [
-        'client/src/**/*.{js,jsx}',
-        '!client/src/index.js',
-        '!**/node_modules/**',
-      ],
-    },
+const createJestConfig = nextJest({
+  // Provide the path to your Next.js app to load next.config.js and .env files
+  dir: "./",
+})
+
+// Add any custom config to be passed to Jest
+const customJestConfig = {
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+  moduleNameMapping: {
+    // Handle module aliases (this will be automatically configured for you based on your tsconfig.json paths)
+    "^@/(.*)$": "<rootDir>/$1",
+  },
+  testEnvironment: "jest-environment-jsdom",
+  collectCoverageFrom: [
+    "components/**/*.{js,jsx,ts,tsx}",
+    "contexts/**/*.{js,jsx,ts,tsx}",
+    "!**/*.d.ts",
+    "!**/node_modules/**",
   ],
-  
-  // Global configuration
-  verbose: true,
-  collectCoverage: true,
-  coverageReporters: ['text', 'lcov', 'clover', 'html'],
   coverageThreshold: {
     global: {
-      statements: 70,
-      branches: 60,
+      branches: 70,
       functions: 70,
       lines: 70,
+      statements: 70,
     },
   },
-  testTimeout: 10000,
-}; 
+}
+
+// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
+module.exports = createJestConfig(customJestConfig)
